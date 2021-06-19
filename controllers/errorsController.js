@@ -2,7 +2,6 @@ const AppError = require('../utils/appError');
 const dotenv = require('dotenv');
 dotenv.config({ path: 'config.env' });
 
-
 // ERRORS - DEVELOPMENT
 function sendErrorDev(err, res) {
     return res.status(err.statusCode).json({
@@ -28,19 +27,16 @@ function sendErrorProd(err, res) {
     })
 }
 
-
-module.exports = function (err, res) {
+module.exports = (err, req, res, next)=> {
     err.statusCode = err.statusCode || 500;
-    err.message = err.status || 'error';
+    err.status = err.status || 'error';
 
-    if(process.env.NODE_EMVIRONMENT === 'development'){
+    if(process.env.NODE_ENVIRONMENT === 'development'){
         sendErrorDev(err, res);
     }
-    
-    else if(process.env.NODE_EMVIRONMENT === 'production'){
+    else if(process.env.NODE_ENVIRONMENT === 'production'){
         let error = { ...err };
         error.message = err.message;
         sendErrorProd(error, res);
-    }
-
-}
+    };
+};
