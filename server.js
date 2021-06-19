@@ -15,6 +15,7 @@ try {
 }
 
 //models - database
+require('./models/usersModel');
 
 //middlewares
 const app = require('./app');

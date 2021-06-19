@@ -9,8 +9,11 @@ const db = new Sequelize(
     {
         host: process.env.NODE_HOST,
         dialect: 'mysql',
-        port: process.env.NODE_PORT
-    }
+        port: process.env.NODE_PORT,
+        define: {
+            timestamps: false
+        }
+    },
 );
 
 module.exports = db;
