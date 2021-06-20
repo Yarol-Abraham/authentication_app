@@ -59,6 +59,16 @@ const User = db.define('Users', {
         defaultValue: "default.jpg"
     },  
 
+    photoURL:{
+        type: DataTypes.STRING,
+        validate:{
+            isUrl: {
+                args: true,
+                msg: "Please insert url valid"
+            }
+        }
+    },
+
     password: {
         type: DataTypes.STRING(100),
         allowNull: false,
