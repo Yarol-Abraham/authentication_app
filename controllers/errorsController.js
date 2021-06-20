@@ -2,6 +2,20 @@ const AppError = require('../utils/appError');
 const dotenv = require('dotenv');
 dotenv.config({ path: 'config.env' });
 
+function validateFields(errors) {
+    let message = "";
+    errors.forEach(err => {
+        message += `${err.path}: ${err.message}. `;
+    });
+    return new AppError(message, 400);
+}
+
+//username no is unique
+function validateUnique(errors) {
+    const message = `${errors[0].value} already exists`;
+    return new AppError(message, 400);
+}
+
 // ERRORS - DEVELOPMENT
 function sendErrorDev(err, res) {
     return res.status(err.statusCode).json({
@@ -34,9 +48,12 @@ module.exports = (err, req, res, next)=> {
     if(process.env.NODE_ENVIRONMENT === 'development'){
         sendErrorDev(err, res);
     }
+    //SequelizeValidationError
     else if(process.env.NODE_ENVIRONMENT === 'production'){
         let error = { ...err };
         error.message = err.message;
+        if(error.name === "SequelizeValidationError") error = validateFields(error.errors);
+        if(error.name === "SequelizeUniqueConstraintError") error = validateUnique(error.errors); 
         sendErrorProd(error, res);
     };
 };

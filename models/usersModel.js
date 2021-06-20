@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const db = require('../config/db');
 const appError = require('../utils/appError');
+const bcryptjs = require('bcryptjs');
 
 const User = db.define('Users', {
 
@@ -67,13 +68,15 @@ const User = db.define('Users', {
             }
         }
     },
-
     passwordConfirm: {
         type: DataTypes.STRING(100),
         allowNull: false,
         validate: {
-            customValidator(value) {
-                if (value === null && this.password === value) {
+            notNull: {
+                msg: "Please confirm your password"
+            },
+            validatePassword(value) {
+                if (value === null || this.password !== value) {
                   throw new appError("Passwords are not the same", 400);
                 }
             }
@@ -86,5 +89,25 @@ const User = db.define('Users', {
     }
 
 } );
+
+//hash password
+User.addHook('beforeCreate', async function(user) {
+    const hashPassword = await bcryptjs.hashSync(user.password, 12);
+    user.password = hashPassword;
+    user.passwordConfirm = "undefined";
+});
+
+//update passwordChangedAt
+User.addHook('beforeSave', function(user) {
+    if(!user.isNewRecord) user.passwordChangedAt = Date.now() - 1000;
+});
+
+//verify password
+User.prototype.correctPassword = async function(password) {
+    console.log("se ejecuta el correct password");
+    return await bcryptjs.compareSync(password, this.password);
+}
+
+//verify password has modified changed recently
 
 module.exports = User;
