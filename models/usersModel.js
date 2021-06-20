@@ -106,7 +106,13 @@ User.addHook('beforeSave', function(user) {
 User.prototype.correctPassword = async function(password) {
     return await bcryptjs.compareSync(password, this.password);
 }
-
 //verify password has modified changed recently
+User.prototype.changedPasswordAfter = async function(jwtTimeStamp) {
+    if(this.passwordChangeAt){
+        const changedPassword = parseInt( this.passwordChangeAt.getTime() / 1000, 10);
+        return jwtTimeStamp < changedPassword;
+    }
+    return false;
+};
 
 module.exports = User;

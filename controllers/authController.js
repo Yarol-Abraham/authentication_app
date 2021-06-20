@@ -9,16 +9,16 @@ const signToken = (id)=>{
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIREIN
     });
-}
+};
 
 const createSendToken = (user, res, statusCode)=>{
     const token = signToken(user.id);
-   return res.status(statusCode).json({
-       status: 'success',
-       token,
-       data: user
-   })
-}
+    return res.status(statusCode).json({
+        status: 'success',
+        token,
+        data: user
+    });
+};
 
 exports.createAccount = catchAsync(async(req, res, next)=>{
     const user = await User.create(req.body);
@@ -46,12 +46,29 @@ exports.login = catchAsync(async(req, res, next)=>{
 });
 
 exports.protect = catchAsync(async(req, res, next)=>{
-   if(
+   let token;
+    if(
        req.headers.authorization &&
        req.headers.authorization.startsWith('Bearer')
-   ){
-    //TODO: terminar el protect de los usuarios
-   }
+    ){ token = req.headers.authorization.split(' ')[1]; }
+
+    if(!token)return next(
+       new AppError("Your are logged in! Please log in to get access",401)
+    );
+    // decoded - GET ID
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    // user search
+    const user = await User.findByPk(decoded.id);
+    if(!user) return next(
+        new AppError("The user beloging to this user does no longer exists.", 401)
+    );
+    // verify password has modified changed recently  
+    const verifyChangedPassword = user.changedPasswordAfter(decoded.iat);
+    if(verifyChangedPassword) return next(
+        new AppError('The password has been changed recently', 401)
+    );
+    req.user = user;
+    res.locals.user = user;
     next();
 });
 
