@@ -63,9 +63,8 @@ exports.protect = catchAsync(async(req, res, next)=>{
         new AppError("The user beloging to this user does no longer exists.", 401)
     );
     // verify password has modified changed recently  
-    const verifyChangedPassword = user.changedPasswordAfter(decoded.iat);
-    if(verifyChangedPassword) return next(
-        new AppError('The password has been changed recently', 401)
+     if(user.changedPasswordAfter(decoded.iat)) return next(
+         new AppError('The password has been changed recently', 401)
     );
     req.user = user;
     res.locals.user = user;
@@ -81,5 +80,17 @@ exports.resetPassword = catchAsync(async(req, res, next)=>{
     ) return next(
         new AppError("write your password, new password and password Confirm", 400)
     );
-    console.log("reset password");
+    const user = await User.findByPk(req.user.id);
+    // verify password
+    const verifyPassword = await user.correctPassword(password);
+    if(!verifyPassword) return next(
+        new AppError("your password is invalid, Please revise your current password", 401)
+    );
+    if(newPassword !== passwordConfirm) return next(
+        new AppError("new password and confirm password are not the same", 401)
+    );
+    user.password = password;
+    user.passwordConfirm = passwordConfirm;
+    await user.save();
+    createSendToken(user, res, 200);
 });
