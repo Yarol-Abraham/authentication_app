@@ -45,10 +45,24 @@ exports.login = catchAsync(async(req, res, next)=>{
     createSendToken(user, res, 200);
 });
 
-exports.resetPassword = catchAsync(async(req, res, next)=>{
-
+exports.protect = catchAsync(async(req, res, next)=>{
+   if(
+       req.headers.authorization &&
+       req.headers.authorization.startsWith('Bearer')
+   ){
+    //TODO: terminar el protect de los usuarios
+   }
+    next();
 });
 
-exports.protect = catchAsync(async(req, res, next)=>{
-
+exports.resetPassword = catchAsync(async(req, res, next)=>{
+    const { password, newPassword, passwordConfirm } = req.body;
+    if(
+        password === "" || 
+        newPassword === "" ||
+        passwordConfirm === "" 
+    ) return next(
+        new AppError("write your password, new password and password Confirm", 400)
+    );
+    console.log("reset password");
 });

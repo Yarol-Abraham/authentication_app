@@ -104,7 +104,6 @@ User.addHook('beforeSave', function(user) {
 
 //verify password
 User.prototype.correctPassword = async function(password) {
-    console.log("se ejecuta el correct password");
     return await bcryptjs.compareSync(password, this.password);
 }
 
