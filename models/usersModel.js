@@ -106,13 +106,6 @@ User.addHook('beforeCreate', async function(user) {
     user.password = hashPassword;
     user.passwordConfirm = "undefined";
 });
-// hashed password - update
-// User.addHook('beforeSave', async(user)=>{
-//     const hashedPassword = await bcryptjs.hash(user.password, 12);
-//     user.password = hashedPassword;
-//     user.passwordConfirm = "undefined";
-//     await user.save();
-// });
 
 //update passwordChangeAt
 User.addHook('beforeSave', function(user) {
