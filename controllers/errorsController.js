@@ -48,7 +48,6 @@ module.exports = (err, req, res, next)=> {
     if(process.env.NODE_ENVIRONMENT === 'development'){
         sendErrorDev(err, res);
     }
-    //SequelizeValidationError
     else if(process.env.NODE_ENVIRONMENT === 'production'){
         let error = { ...err };
         error.message = err.message;

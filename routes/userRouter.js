@@ -4,8 +4,11 @@ const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 
 route.use(authController.protect)
-route
-    .route('/getMe')
-    .get(userController.getMe);
-
+route.get('/getMe',userController.getMe);
+route.patch('/uploadMe', 
+   userController.updateUserPhoto,
+    userController.captureErrors
+    //userController.resizePhoto,
+   // userController.uploadMe
+);
 module.exports = route;
