@@ -27,6 +27,7 @@ function sendErrorDev(err, res) {
 
 // ERRORS - PRODUCTION
 function sendErrorProd(err, res) {
+   // console.log(err);
     //error control isOperational
     if(err.isOperational){
         return res.status(err.statusCode).json({

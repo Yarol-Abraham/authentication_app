@@ -102,19 +102,26 @@ const User = db.define('Users', {
 
 //hash password
 User.addHook('beforeCreate', async function(user) {
-    const hashPassword = await bcryptjs.hashSync(user.password, 12);
+    const hashPassword = await bcryptjs.hash(user.password, 12);
     user.password = hashPassword;
     user.passwordConfirm = "undefined";
 });
+// hashed password - update
+// User.addHook('beforeSave', async(user)=>{
+//     const hashedPassword = await bcryptjs.hash(user.password, 12);
+//     user.password = hashedPassword;
+//     user.passwordConfirm = "undefined";
+//     await user.save();
+// });
 
-//update passwordChangedAt
+//update passwordChangeAt
 User.addHook('beforeSave', function(user) {
-    if(!user.isNewRecord) user.passwordChangedAt = Date.now() - 1000;
+    if(!user.isNewRecord) user.passwordChangeAt = Date.now() - 1000;
 });
 
 //verify password
-User.prototype.correctPassword = async function(password) {
-    return await bcryptjs.compareSync(password, this.password);
+User.prototype.correctPassword = async function(canditatePassword, password) {
+    return await bcryptjs.compare(canditatePassword, password);
 }
 //verify password has modified changed recently
 User.prototype.changedPasswordAfter = function(jwtTimeStamp) {

@@ -7,8 +7,8 @@ route.use(authController.protect)
 route.get('/getMe',userController.getMe);
 route.patch('/uploadMe', 
    userController.updateUserPhoto,
-    userController.captureErrors
-    //userController.resizePhoto,
-   // userController.uploadMe
+   userController.captureErrors,
+   userController.resizePhoto,
+   userController.uploadMe
 );
 module.exports = route;

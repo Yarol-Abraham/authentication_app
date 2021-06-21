@@ -1,8 +1,9 @@
 const User = require('../models/usersModel');
+const factory = require('./handeFactory');
 
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-
+const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const signToken = (id)=>{
@@ -19,6 +20,8 @@ const createSendToken = (user, res, statusCode)=>{
         data: user
     });
 };
+
+exports.captureErrors = factory.captureErrors('name', 'bio', 'phone', 'email', 'password', 'passwordConfirm');
 
 exports.createAccount = catchAsync(async(req, res, next)=>{
     const user = await User.create(req.body);
@@ -38,7 +41,8 @@ exports.login = catchAsync(async(req, res, next)=>{
         new AppError("Incorrect email or password", 400)
     );
     //verify password
-    const verifyPassword = await user.correctPassword(password);
+    const verifyPassword = await user.correctPassword(password, user.password);
+    
     if(!verifyPassword) return next(
         new AppError("Incorrect email or password", 400)
     );
@@ -82,15 +86,18 @@ exports.resetPassword = catchAsync(async(req, res, next)=>{
     );
     const user = await User.findByPk(req.user.id);
     // verify password
-    const verifyPassword = await user.correctPassword(password);
+    if(!user) return next(
+        new AppError("this user not exist", 4001)
+    );
+    const verifyPassword = await user.correctPassword(password, user.password);
     if(!verifyPassword) return next(
         new AppError("your password is invalid, Please revise your current password", 401)
     );
     if(newPassword !== passwordConfirm) return next(
         new AppError("new password and confirm password are not the same", 401)
     );
-    user.password = password;
-    user.passwordConfirm = passwordConfirm;
+    user.password =  await bcryptjs.hash(newPassword, 12);
+    user.passwordConfirm = "undefined";
     await user.save();
     createSendToken(user, res, 200);
 });

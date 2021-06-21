@@ -1,11 +1,11 @@
 const User = require('../models/usersModel');
+const factory = require('./handeFactory');
 
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 const multer = require('multer');
 const sharp = require('sharp');
-const { body, validationResult } = require('express-validator');
 const fs = require('fs');
 
 const multerStorage = multer.memoryStorage();
@@ -61,14 +61,6 @@ const sendJSON = (user, req, res, statusCode)=>{
     });
 };
 
-const filterData = (data, ...allowFields)=>{
-    let newData = {};
-    Object.keys(data).forEach(el =>{
-        if( allowFields.includes(el) ) newData[el] = data[el];
-    });
-    return newData;
-};
-
 exports.getMe = catchAsync(async(req, res, next)=>{
     const user = await User.findByPk(req.user.id);
     if(!user) return next( 
@@ -77,50 +69,7 @@ exports.getMe = catchAsync(async(req, res, next)=>{
     sendJSON(user, req, res, 200);
 });
 
-exports.captureErrors = catchAsync(async(req, res, next)=>{
-    let rules = [];
-    // filter data in req.body
-    const filterBody = filterData(req.body, 'photoURL', 'name', 'bio', 'phone', 'email');
-    // revise if exists fields for update
-    if(Object.keys(filterBody).length === 0) return sendJSON(null, req, res, 200);
-    // revise if the fields are empty 
-    Object.keys(filterBody).forEach((field) =>{
-        rules.push(
-            body(field)
-            .trim()
-            .escape()
-            .not()
-            .isEmpty()
-            .withMessage("cannot go empty")
-        );
-        if(body(field).builder.fields[0] === "email") 
-        {   
-            rules.push(
-                body(field)
-                .isEmail()
-                .withMessage("your email is not valid")
-            )
-        }
-        if(body(field).builder.fields[0] === "phone")
-        { 
-            rules.push(
-                body(field)
-                .isNumeric()
-                .withMessage("Only numbers allowed")
-            )
-        }
-    });
-    await Promise.all( rules.map(validator => validator.run(req) ) );
-
-    const errores = validationResult(req);
- 
-    if(!errores.isEmpty()){
-        //TODO: terminar esta parte
-        console.log(errores.array());
-    }
-
-   // next();
-});
+exports.captureErrors = factory.captureErrors('photoURL', 'name', 'bio', 'phone', 'email');
 
 exports.uploadMe = catchAsync(async(req, res, next)=>{
     if(req.body.password || req.body.passwordConfirm) return next(
@@ -128,6 +77,8 @@ exports.uploadMe = catchAsync(async(req, res, next)=>{
     );
     // if exist image
     if(req.file) req.body.photo = req.file.filename;
+    // if exist fields in req.body
+    if(Object.keys(req.body) === 0) return sendJSON(null, req, res, 200);
     // update user
     const user = await User.update(req.body, {
         where: { id: req.user.id }
