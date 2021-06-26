@@ -26,11 +26,7 @@ const User = db.define('Users', {
 
     phone: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         validate:{
-            notNull: { 
-                msg: "Please provide your phone"
-            },
             isNumeric: {
                 args: true,
                 msg: "Only numbers allowed"

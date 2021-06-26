@@ -66,6 +66,8 @@ exports.getMe = catchAsync(async(req, res, next)=>{
     if(!user) return next( 
         new AppError("this user not exist", 400) 
     );
+    user.password = undefined;
+    user.passwordConfirm = undefined;
     sendJSON(user, req, res, 200);
 });
 
