@@ -28,7 +28,7 @@ exports.updateUserPhoto = upload.single('photo');
 exports.resizePhoto = catchAsync(async(req, res, next)=>{
   
     if(!req.file) return next();
-    req.file.filename = `${req.user.id}-${req.user.email}.jpeg`;
+    req.file.filename = `${req.user.id}-${Date.now()}.jpeg`;
     // delete previous image
    if(req.user.photo !== 'default.jpg'){
         const previousImagen = __dirname+`/../assets/images/users/${req.file.filename}`;
@@ -50,14 +50,13 @@ exports.resizePhoto = catchAsync(async(req, res, next)=>{
 });
 
 const sendJSON = (user, req, res, statusCode)=>{
-    let data = user;
-    if(
-        req.url === "/uploadMe" && data === null || 
-        req.url === "/uploadMe" && Array.isArray(data)
-    ) data = "Your data update success";
+    const data = user;
+    let message = "ok";
+    if( req.url === "/uploadMe" ) message = "Your data update success";
     return res.status(statusCode).json({
         status: "success",
-        data
+        data,
+        message
     });
 };
 
@@ -82,9 +81,10 @@ exports.uploadMe = catchAsync(async(req, res, next)=>{
     // if exist fields in req.body
     if(Object.keys(req.body) === 0) return sendJSON(null, req, res, 200);
     // update user
-    const user = await User.update(req.body, {
+    await User.update(req.body, {
         where: { id: req.user.id }
     });
+    const user = await User.findByPk(req.user.id);
     sendJSON(user, req, res, 200);
 });
 
