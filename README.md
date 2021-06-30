@@ -4,7 +4,7 @@ Solution for a challenge from <a href="https://devchallenges.io/">devchallenges<
 
 <ul>
     <li><a href="https://devchallenges.io/challenges/N1fvBjQfhlkctmwj1tnw">Challenge</a></li>
-    <li href="https://authenticationya.vercel.app/login"><a>Demo</a></li>
+    <li><a href="https://authenticationya.vercel.app/login">Demo</a></li>
 </ul>
 
 # Build - main features
